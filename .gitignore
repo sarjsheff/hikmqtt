@@ -1,0 +1,5 @@
+run.sh
+docker_*
+*.jpg
+hikmqtt.json
+hikmqtt
