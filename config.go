@@ -19,6 +19,9 @@ type Cam struct {
 	Username string
 	Password string
 	Name     string
+	W        uint
+	H        uint
+	Interval uint
 }
 
 var configFlag = flag.String("c", "hikmqtt.json", "config file")

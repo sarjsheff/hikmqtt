@@ -23,11 +23,39 @@ type SnapPayload struct {
 	Name  string
 }
 
+func (cam Cam) width() uint {
+	if cam.W != 0 {
+		return cam.W
+	} else if cam.H != 0 {
+		return 0
+	} else {
+		return 800
+	}
+}
+
+func (cam Cam) height() uint {
+	if cam.H != 0 {
+		return cam.H
+	} else if cam.W != 0 {
+		return 0
+	} else {
+		return 0
+	}
+}
+
+func (cam Cam) interval() uint {
+	if cam.Interval != 0 {
+		return cam.Interval
+	} else {
+		return 5000
+	}
+}
+
 func (cam Cam) run(cli *mqtt.Client, wg *sync.WaitGroup) {
 	log.Printf("Login to cam %s [%s]\n", cam.Name, cam.Ip)
 	u, dev := hiklib.HikLogin(cam.Ip, cam.Username, cam.Password)
 	imgpath := "/tmp/" + cam.Ip + "_image.jpg"
-	ticker := time.NewTicker(time.Millisecond * 5000)
+	ticker := time.NewTicker(time.Millisecond * time.Duration(cam.interval()))
 	for t := range ticker.C {
 		log.Println("Tick at", t)
 		if hiklib.HikCaptureImage(u, dev.ByStartChan, imgpath) == 1 {
@@ -35,7 +63,7 @@ func (cam Cam) run(cli *mqtt.Client, wg *sync.WaitGroup) {
 			if err == nil {
 				image, _, err := image.Decode(f)
 				if err == nil {
-					newImage := resize.Resize(800, 0, image, resize.Lanczos3)
+					newImage := resize.Resize(cam.width(), cam.height(), image, resize.Lanczos3)
 					var b bytes.Buffer
 					w := bufio.NewWriter(&b)
 					err = jpeg.Encode(w, newImage, nil)
